@@ -168,7 +168,7 @@ def main():
             )
         )
 
-        dst_host_srv_count = len(dst_host_count_feature_sessions)
+        dst_host_srv_count = len(dst_host_srv_count_feature_sessions)
 
         dst_host_same_src_port_rate = (
             (
