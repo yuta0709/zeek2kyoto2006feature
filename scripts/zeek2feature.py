@@ -1,6 +1,7 @@
 import csv
 from dataclasses import dataclass, asdict
 from typing import List
+import argparse
 
 from zeek_loader import load_zeek_log, ZeekLogSchema
 
@@ -78,7 +79,10 @@ def write_to_csv(features, filename):
 
 
 def main():
-    file_path = "conn.log"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename")
+    args = parser.parse_args()
+    file_path = args.filename
     zeek_logs = load_zeek_log(file_path)
     zeek_logs = sorted(zeek_logs, key=zeeklog_sort)
     features: List[Kyoto2006Feature] = []
