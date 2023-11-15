@@ -8,6 +8,7 @@ from pandas import DataFrame
 
 @dataclass
 class ZeekLogSchema:
+    ts_str: str
     ts: float  # タイムスタンプ
     uid: str  # 一意の接続ID
     id_orig_h: str  # 送信元ホストアドレス
@@ -56,11 +57,18 @@ def load_zeek_log(file_path: str) -> List[ZeekLogSchema]:
         "tunnel_parents",
     ]
     df = pd.read_csv(
-        file_path, sep="\t", header=None, names=column_names, comment="#", na_values="-"
+        file_path,
+        sep="\t",
+        header=None,
+        names=column_names,
+        comment="#",
+        na_values="-",
+        dtype={"ts": str},
     )
     zeek_logs = []
     for i, row in df.iterrows():
-        ts = row["ts"]
+        ts_str = row["ts"]
+        ts = float(ts_str)
         uid = row["uid"]
         id_orig_h = row["id.orig_h"]
         id_orig_p = row["id.orig_p"]
@@ -84,6 +92,7 @@ def load_zeek_log(file_path: str) -> List[ZeekLogSchema]:
             row["tunnel_parents"] if not pd.isna(row["tunnel_parents"]) else None
         )
         log = ZeekLogSchema(
+            ts_str,
             ts,
             uid,
             id_orig_h,

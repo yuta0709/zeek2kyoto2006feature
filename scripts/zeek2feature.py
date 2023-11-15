@@ -2,12 +2,15 @@ import csv
 from dataclasses import dataclass, asdict
 from typing import List
 import argparse
+import os
 
 from zeek_loader import load_zeek_log, ZeekLogSchema
 
 
 @dataclass
 class Kyoto2006Feature:
+    unix_s: int
+    unix_ns: int
     duration: float
     service: str
     source_bytes: int
@@ -81,12 +84,16 @@ def write_to_csv(features, filename):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
+    parser.add_argument("output_dir")
     args = parser.parse_args()
     file_path = args.filename
+    output_dir = args.output_dir
     zeek_logs = load_zeek_log(file_path)
     zeek_logs = sorted(zeek_logs, key=zeeklog_sort)
     features: List[Kyoto2006Feature] = []
     for log in zeek_logs:
+        unix_s = int(log.ts_str.split(".")[0])
+        unix_ns = int(log.ts_str.split(".")[1]) * 1000
         duration = log.duration if log.duration is not None else 0.0
 
         service = log.service if log.service is not None else "others"
@@ -224,6 +231,8 @@ def main():
         flag = log.conn_state
 
         kyoto_feature = Kyoto2006Feature(
+            unix_s,
+            unix_ns,
             duration,
             service,
             source_bytes,
@@ -240,7 +249,7 @@ def main():
             flag,
         )
         features.append(kyoto_feature)
-    write_to_csv(features, "kyoto_features.csv")
+    write_to_csv(features, os.path.join(output_dir, "net_session.csv"))
 
 
 if __name__ == "__main__":
